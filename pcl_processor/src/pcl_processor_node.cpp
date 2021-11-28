@@ -22,9 +22,9 @@ PclProcessorRos::PclProcessorRos() :
     nh_(ros::this_node::getName())
 {
   uint32_t queue_size = 1;
-	pointcloud_pub = nh_.advertise<sensor_msgs::PointCloud2>("point_cloud_filtered", queue_size);
+	pointcloud_pub = nh_.advertise<sensor_msgs::PointCloud2>("pcl_cloud_filtered", queue_size);
 
-	ros::ServiceServer service = nh_.advertiseService("calculate_object_pose", CalculateObjectposeFromPointcloud);
+	ros::ServiceServer calculate_objectpose_service = nh_.advertiseService("calculate_object_pose", &PclProcessorRos::CalculateObjectpose, this);
 }
 
 PclProcessorRos::~PclProcessorRos()
@@ -35,47 +35,43 @@ PclProcessorRos::~PclProcessorRos()
 //void PclProcessorRos::process(){
 //}
 
-
-bool PclProcessorRos::CalculateObjectposeFromPointcloud(pcl_processor_msgs::CalculateObjectposeFromPointcloud::Request  &request,
+bool PclProcessorRos::CalculateObjectpose(pcl_processor_msgs::CalculateObjectposeFromPointcloud::Request  &request,
          pcl_processor_msgs::CalculateObjectposeFromPointcloud::Response &response)
 {
 
-	ROS_INFO("CalculateObjectposeFromPointcloud start");
 
-	pcl::PCLPointCloud2* point_cloud2 = new pcl::PCLPointCloud2;
-	pcl_conversions::toPCL(request.pointcloud, *point_cloud2);  // From ROS-PCL to PCL2
+  ROS_INFO("CalculateObjectposeFromPointcloud start");
 
-	pcl::PointCloud<pcl::PointXYZ>::Ptr point_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-	pcl::fromPCLPointCloud2(*point_cloud2, *point_cloud); // From PCL2 to PCL
 
-	/* Filtered Cloud */
-	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::PCLPointCloud2* cloud2 = new pcl::PCLPointCloud2;
+  pcl_conversions::toPCL(request.pointcloud, *cloud2);  // From ROS-PCL to PCL2
 
-  pcl_processor.setInputCloud(point_cloud);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::fromPCLPointCloud2(*cloud2, *pcl_cloud); // From PCL2 to PCL
 
+
+  pcl_processor.setInputCloud(pcl_cloud);
 	pcl_processor.process();
-
-  pcl_processor.getFilteredCloud(cloud_filtered);
+  filtered_pcl_cloud = pcl_processor.getFilteredCloud();
   geometry_msgs::Vector3 object_position = pcl_processor.getObjectPosition();
 
 
-	pcl::PCLPointCloud2* point_cloud2_filtered = new pcl::PCLPointCloud2;
-	pcl::toPCLPointCloud2(*cloud_filtered, *point_cloud2_filtered); // From PCL to PCL2
+	pcl::PCLPointCloud2* filtered_cloud2 = new pcl::PCLPointCloud2;
+	pcl::toPCLPointCloud2(*filtered_pcl_cloud, *filtered_cloud2); // From PCL to PCL2
 
   /* initialaize pointcloud */
   ROS_INFO("Create filtered ROS cloud");
 
-  sensor_msgs::PointCloud2 ros_point_cloud_filtered;
-  pcl::toROSMsg(*cloud_filtered, ros_point_cloud_filtered);
+  sensor_msgs::PointCloud2 filtered_ros_cloud;
+  pcl::toROSMsg(*filtered_pcl_cloud, filtered_ros_cloud);
   /* of deze */
-	//pcl_conversions::fromPCL(*point_cloud2_filtered, ros_point_cloud_filtered); // From PCL2 to ROS-PCL2
+	//pcl_conversions::fromPCL(*filtered_cloud2, filtered_ros_cloud); // From PCL2 to ROS-PCL2
 
-  ros_point_cloud_filtered.header.frame_id = request.pointcloud.header.frame_id;
+  filtered_ros_cloud.header.frame_id = request.pointcloud.header.frame_id;
 
   /* publish point cloud */
   ROS_INFO("Publish filtered cloud");
-
-  pointcloud_pub.publish(ros_point_cloud_filtered);
+  pointcloud_pub.publish(filtered_ros_cloud);
   /* End add */
 
 	geometry_msgs::TransformStamped static_transformStamped;

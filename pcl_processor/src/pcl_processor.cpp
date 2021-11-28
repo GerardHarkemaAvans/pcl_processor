@@ -12,8 +12,8 @@ void PclProcessor::setInputCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud){
   input_cloud = cloud;
 }
 
-void PclProcessor::getFilteredCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud){
-  cloud = filtered_cloud; 
+pcl::PointCloud<pcl::PointXYZ>::Ptr PclProcessor::getFilteredCloud(){
+  return filtered_cloud; 
 }
 
 geometry_msgs::Vector3 PclProcessor::getObjectPosition(){

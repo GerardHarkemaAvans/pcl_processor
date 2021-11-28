@@ -38,7 +38,8 @@ class PclProcessorRos
         ros::NodeHandle nh_;
         PclProcessor pcl_processor;
         ros::Publisher pointcloud_pub;
-        ros::ServiceServer service;
+        ros::ServiceServer calculate_objectpose_service;
+        pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_pcl_cloud;
 
     protected:
 
@@ -73,7 +74,6 @@ class PclProcessorRos
         //void publish();
 
 
-        bool CalculateObjectposeFromPointcloud(pcl_processor_msgs::CalculateObjectposeFromPointcloud::Request  &request,
-         pcl_processor_msgs::CalculateObjectposeFromPointcloud::Response &response);
+        bool CalculateObjectpose(pcl_processor_msgs::CalculateObjectposeFromPointcloud::Request  &request,      pcl_processor_msgs::CalculateObjectposeFromPointcloud::Response &response);
 };
 #endif

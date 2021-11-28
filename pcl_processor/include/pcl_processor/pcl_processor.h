@@ -27,7 +27,7 @@ class PclProcessor
   ~PclProcessor();
 
   void setInputCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud);
-  void getFilteredCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr getFilteredCloud();
   geometry_msgs::Vector3 getObjectPosition();
 
   void process();
