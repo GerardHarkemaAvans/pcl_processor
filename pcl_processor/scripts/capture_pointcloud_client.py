@@ -2,7 +2,7 @@
 
 import sys
 import rospy
-from binpicking_msgs.srv import CapturePointcloud, CapturePointcloudRequest, CapturePointcloudResponse
+from pcl_processor_msgs.srv import CapturePointcloud, CapturePointcloudRequest, CapturePointcloudResponse
 
 def capture_pointcloud_client():
     # First wait for the service to become available.

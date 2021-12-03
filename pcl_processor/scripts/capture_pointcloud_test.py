@@ -36,13 +36,13 @@ def caputere():
 
 #    try:
     now = rospy.Time.now()
-    trans = tfBuffer.lookup_transform("base_link", "camera_depth_optical_frame", rospy.Time())#now)
+    trans = tfBuffer.lookup_transform("world", "camera_depth_optical_frame", rospy.Time())#now)
     print(trans)
     t = copy.deepcopy(trans)
 #        t = geometry_msgs.msg.TransformStamped()
 
     t.header.stamp = rospy.Time.now()
-    t.header.frame_id = "base_link"
+    t.header.frame_id = "world"
     t.child_frame_id = "camera_depth_optical_frame_capture"
 
     broadcaster.sendTransform(t)
