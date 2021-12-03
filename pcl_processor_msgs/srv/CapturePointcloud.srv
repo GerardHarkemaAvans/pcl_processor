@@ -1,5 +1,0 @@
-int32 dummy			# Request message: Dummy.
----
-sensor_msgs/PointCloud2 pointcloud
-#geometry_msgs/Pose      camera_pose
-bool success			# Response message: Success or failure of capture.

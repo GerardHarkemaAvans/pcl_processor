@@ -4,12 +4,12 @@
 int main(int argc, char **argv)
 {
 
-	ros::init(argc, argv, "pcl_processorr");
+	ros::init(argc, argv, "pcl_processor");
+	ros::NodeHandle nh;
 
   //create ros wrapper object
   PclProcessorRos pcl_processor_ros;
 
-	ros::NodeHandle nh;
 
 	ROS_INFO("Ready to calculate pose.");
 	ros::spin();
@@ -18,13 +18,15 @@ int main(int argc, char **argv)
 }
 
 
+
 PclProcessorRos::PclProcessorRos() :
     nh_(ros::this_node::getName())
 {
   uint32_t queue_size = 1;
-	pointcloud_pub = nh_.advertise<sensor_msgs::PointCloud2>("pcl_cloud_filtered", queue_size);
+	filtered_pointcloud_pub = nh_.advertise<sensor_msgs::PointCloud2>("pcl_cloud_filtered", queue_size);
+	capture_pointcloud_pub = nh_.advertise<sensor_msgs::PointCloud2>("pcl_cloud_capture", queue_size);
 
-	ros::ServiceServer calculate_objectpose_service = nh_.advertiseService("calculate_object_pose", &PclProcessorRos::CalculateObjectpose, this);
+	calculate_objectpose_service = nh_.advertiseService("calculate_object_pose", &PclProcessorRos::CalculateObjectpose, this);
 }
 
 PclProcessorRos::~PclProcessorRos()
@@ -39,9 +41,22 @@ bool PclProcessorRos::CalculateObjectpose(pcl_processor_msgs::CalculateObjectpos
          pcl_processor_msgs::CalculateObjectposeFromPointcloud::Response &response)
 {
 
-
   ROS_INFO("CalculateObjectposeFromPointcloud start");
 
+	sensor_msgs::PointCloud2 pc;
+	sensor_msgs::PointCloud2ConstPtr msg = ros::topic::waitForMessage<sensor_msgs::PointCloud2>("/camera/depth/color/points", ros::Duration(10));
+  if (msg == NULL){}
+			ROS_INFO("No point clound messages received");
+			response.success = false;
+			return false;
+	}
+  else
+      pc = *msg;
+
+	capture_pointcloud_pub.publish(pc);
+
+
+#if 0
 
   pcl::PCLPointCloud2* cloud2 = new pcl::PCLPointCloud2;
   pcl_conversions::toPCL(request.pointcloud, *cloud2);  // From ROS-PCL to PCL2
@@ -107,6 +122,7 @@ bool PclProcessorRos::CalculateObjectpose(pcl_processor_msgs::CalculateObjectpos
 		transformStamped = tfBuffer.lookupTransform("base_link", "object_to_grasp", ros::Time(0));
 		tf2::doTransform(poseStamped, poseStamped, transformStamped); // object_to_grasp is the PoseStamped I want to transform
 
+
 		static tf2_ros::StaticTransformBroadcaster static_broadcaster;
 		geometry_msgs::TransformStamped static_transformStamped;
 
@@ -128,6 +144,22 @@ bool PclProcessorRos::CalculateObjectpose(pcl_processor_msgs::CalculateObjectpos
 		ROS_ERROR("Error lookupTransform.");
 		response.success = false;
 	}
+#endif
+
+#if 1
+	geometry_msgs::PoseStamped poseStamped;
+	poseStamped.pose.orientation.x = 0;
+	poseStamped.pose.orientation.y = 0;
+	poseStamped.pose.orientation.z = 0;
+	poseStamped.pose.orientation.w = 1.0;
+	poseStamped.pose.position.x = 1;
+	poseStamped.pose.position.y = 2;
+	poseStamped.pose.position.z = 3;
+
+
+	response.success = true;
+	response.object_pose = poseStamped;
+#endif
 
 
 	ROS_INFO("CalculateObjectposeFromPointcloud exit");
@@ -139,6 +171,3 @@ bool PclProcessorRos::CalculateObjectpose(pcl_processor_msgs::CalculateObjectpos
 //void PclProcessorRos::publish()
 //{
 //}
-
-
-

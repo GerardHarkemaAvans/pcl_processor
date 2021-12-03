@@ -19,7 +19,6 @@ add_message_files(DIRECTORY msg
 ## Generate messages in the 'srv' folder
 add_service_files(DIRECTORY srv
   FILES
-  CapturePointcloud.srv
   CalculateObjectposeFromPointcloud.srv
 )
 
