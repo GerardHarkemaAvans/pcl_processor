@@ -17,8 +17,9 @@ class PclProcessor
 {
   protected:
   pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud;
-  pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_cloud;
 	geometry_msgs::Vector3 object_position;
+  // Create the filtering object
+  pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_cloud;// (new pcl::PointCloud<pcl::PointXYZ>);
 
 
   public:

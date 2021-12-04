@@ -2,38 +2,30 @@
 
 
 PclProcessor::PclProcessor(){
+  /* Niet netjes, weet nog niet hoe dat moet in 1 regel */
+  pcl::PointCloud<pcl::PointXYZ>::Ptr local_filtered_cloud (new pcl::PointCloud<pcl::PointXYZ>);
+  filtered_cloud = local_filtered_cloud;
+  //filtered_cloud = new pcl::PointCloud<pcl::PointXYZ>;
 }
 
 PclProcessor::~PclProcessor(){
 }
-
 
 void PclProcessor::setInputCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud){
   input_cloud = cloud;
 }
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr PclProcessor::getFilteredCloud(){
-  return filtered_cloud; 
+  return filtered_cloud;
 }
 
 geometry_msgs::Vector3 PclProcessor::getObjectPosition(){
   return object_position;
 }
 
-
 void PclProcessor::process() {
 
-
-	pcl::search::Search<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
-	pcl::PointCloud <pcl::Normal>::Ptr normals(new pcl::PointCloud <pcl::Normal>);
-	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normal_estimator;
-	normal_estimator.setSearchMethod(tree);
-	normal_estimator.setInputCloud(input_cloud);
-	normal_estimator.setKSearch(50);
-	normal_estimator.compute(*normals);
-
-
-  // Create the filtering object
+  /* Filter the cloud */
   pcl::PassThrough<pcl::PointXYZ> pass;
   pass.setInputCloud (input_cloud);
   pass.setFilterFieldName ("z");
@@ -41,8 +33,15 @@ void PclProcessor::process() {
   //pass.setFilterLimitsNegative (true);
   /* The actal filtering */
   pass.filter(*filtered_cloud);
-  // End add */
 
+  /* Find the nearest objecy */
+	pcl::search::Search<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
+	pcl::PointCloud <pcl::Normal>::Ptr normals(new pcl::PointCloud <pcl::Normal>);
+	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normal_estimator;
+	normal_estimator.setSearchMethod(tree);
+	normal_estimator.setInputCloud(input_cloud); // should be filtered_cloud, to be done
+	normal_estimator.setKSearch(50);
+	normal_estimator.compute(*normals);
 
 	pcl::RegionGrowing<pcl::PointXYZ, pcl::Normal> reg;
 	reg.setMinClusterSize(50);
@@ -58,7 +57,6 @@ void PclProcessor::process() {
 	std::vector <pcl::PointIndices> clusters;
 	reg.extract(clusters);
 
-
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_cluster(new pcl::PointCloud<pcl::PointXYZ>);
 	int cnt = 0;
 	pcl::PointXYZ CenterPoint;
@@ -73,8 +71,6 @@ void PclProcessor::process() {
 		cloud_cluster->width = cloud_cluster->points.size();
 		cloud_cluster->height = 1;
 		cloud_cluster->is_dense = true;
-
-
 
 		// Find centroid of the object
 		Eigen::Vector4f centroid;
@@ -98,14 +94,15 @@ void PclProcessor::process() {
 		cnt++;
 	}
 
-
+#if 0
+  printf("x=%f\n", CenterPointMin.x);
+  printf("y=%f\n", CenterPointMin.y);
+  printf("z=%f\n", CenterPointMin.z);
+#endif
 
 	object_position.x = CenterPointMin.x;
 	object_position.y = CenterPointMin.y;
 	object_position.z = CenterPointMin.z;
 
 	return;
-
-
-
 }

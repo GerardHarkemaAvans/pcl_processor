@@ -41,7 +41,7 @@ class PclProcessorRos
         ros::Publisher capture_pointcloud_pub;
         ros::ServiceServer calculate_objectpose_service;
         pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_pcl_cloud;
-        pcl::PointCloud<pcl::PointXYZ>::Ptr capture_pcl_cloud;
+        //pcl::PointCloud<pcl::PointXYZ>::Ptr capture_pcl_cloud;
 
     protected:
 
