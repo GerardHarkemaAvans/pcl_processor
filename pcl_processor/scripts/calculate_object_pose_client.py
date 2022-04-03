@@ -10,7 +10,7 @@ def calculate_object_pose_client():
     rospy.wait_for_service("/calculate_object_pose/calculate_object_pose")
     try:
         # Create a service proxy.
-        calculate_object_pose = rospy.ServiceProxy('/pcl_processor/calculate_object_pose', CalculateObjectposeFromPointcloud)
+        calculate_object_pose = rospy.ServiceProxy('/calculate_object_pose/calculate_object_pose', CalculateObjectposeFromPointcloud)
 
         request = CalculateObjectposeFromPointcloudRequest()
         # Call the service here.
