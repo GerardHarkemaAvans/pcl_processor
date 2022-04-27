@@ -33,9 +33,7 @@ if __name__ == "__main__":
     service_response = calculate_object_pose_client()
 
     # Process the service response and display log messages accordingly.
-    if(not service_response.success):
-        rospy.logerr("Calculate objectpose unsuccessful!")
-    else:
+e
        rospy.loginfo("Calculate objectpose successful!")
        rospy.loginfo(service_response.object_pose)
 #       print(service_response.camera_pose)
